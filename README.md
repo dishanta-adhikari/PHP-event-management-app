@@ -53,8 +53,8 @@ A comprehensive event management platform built with PHP, MySQL, and Bootstrap. 
    ```
    Edit `.env` with:
    ```env
-   DB_HOST=127.0.0.1
-   DB_NAME=your_db
+   DB_HOST=localhost
+   DB_NAME=gcuems_db
    DB_USER=root
    DB_PASS=
    APP_URL=http://localhost/PHP-event-management-app
