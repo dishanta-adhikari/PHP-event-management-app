@@ -39,11 +39,6 @@ logs/
 /uploads/
 /public/uploads/
 
-# Database files
-*.sql
-*.db
-*.sqlite
-
 # Backup files
 *.bak
 *.backup
