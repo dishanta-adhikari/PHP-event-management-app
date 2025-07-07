@@ -1,4 +1,4 @@
-# PHP Event Management System
+# Event Management System
 
 A comprehensive event management platform built with PHP, MySQL, and Bootstrap. This system is designed for educational institutions to manage events, allowing students to browse and register for programs efficiently. It features user authentication, role-based dashboards, secure registration, and responsive UI.
 
