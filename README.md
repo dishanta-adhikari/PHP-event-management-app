@@ -43,7 +43,7 @@ A comprehensive event management platform built with PHP, MySQL, and Bootstrap. 
    - Place the project folder inside the `htdocs` directory.
 
 3. Database Setup  
-   - Create a database in phpMyAdmin (e.g. `event_management`)  
+   - Create a database in phpMyAdmin (e.g. `gcuems_db`)  
    - Import the SQL file (if provided)  
    - Update database credentials in the config file  
 
