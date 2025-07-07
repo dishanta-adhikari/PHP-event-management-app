@@ -1,87 +1,111 @@
 # PHP Event Management System
 
-A comprehensive event management platform built with PHP, MySQL, and Bootstrap. This application enables educational institutions to manage and organize various programs and events, allowing students to register for activities seamlessly.
+A comprehensive event management platform built with PHP, MySQL, and Bootstrap. This system is designed for educational institutions to manage events, allowing students to browse and register for programs efficiently. It features user authentication, role-based dashboards, secure registration, and responsive UI.
 
-## 🚀 Features
+---
+
+## Features
 
 ### Core Functionality
-- **User Authentication System** - Secure login/register for different user types
-- **Role-Based Access Control** - Admin, Club, and Student user roles
-- **Program Management** - Create, edit, and manage events/programs
-- **Student Registration** - Easy registration system for programs
-- **Duplicate Prevention** - Prevents multiple registrations for the same event
+- User Authentication – Secure login system with session handling  
+- Role-Based Access – Admin, Club, and Student roles with separate dashboards  
+- Program Management – Admins & Clubs can create, update, and delete events  
+- Student Registration – Students can view and register for events  
+- Duplicate Registration Prevention – Avoid multiple entries for the same event  
 
 ### Technical Features
-- **MVC Architecture** - Clean separation of Models, Views, and Controllers
-- **Database Security** - Prepared statements to prevent SQL injection
-- **Responsive Design** - Bootstrap-based UI that works on all devices
-- **File Upload System** - Image uploads for program posters
-- **Session Management** - Secure user session handling
+- MVC Architecture – Clean code separation (Controllers, Views, Models)  
+- Database Security – Prepared statements to prevent SQL injection  
+- Responsive UI – Mobile-friendly interface with Bootstrap  
+- File Uploads – Poster/image support for events  
+- Session Management – Proper login sessions with access control  
 
-## 📋 Prerequisites
+---
 
-- XAMPP (Apache + MySQL + PHP)
-- PHP 7.4 or higher
-- MySQL 5.7 or higher
-- Composer (for dependency management)
+## Prerequisites
 
-## 🛠️ Installation
+- XAMPP (Apache, MySQL, PHP)  
+- PHP 7.4 or higher  
+- MySQL 5.7 or higher  
+- Composer (for dependency management)  
 
-1. **Clone the Repository**
+---
+
+## Installation Guide
+
+1. Clone the Repository  
    ```bash
    git clone <repository-url>
    cd PHP-event-management-app
    ```
 
-2. **Setup XAMPP**
-   - Start Apache and MySQL services
-   - Place the project in `htdocs` directory
+2. Move to XAMPP Directory  
+   - Place the project folder inside the `htdocs` directory.
 
-3. **Database Setup**
-   - Create a new MySQL database
-   - Import the database schema (if SQL file provided)
-   - Update database credentials in configuration
+3. Database Setup  
+   - Create a database in phpMyAdmin (e.g. `event_management`)  
+   - Import the SQL file (if provided)  
+   - Update database credentials in the config file  
 
-4. **Environment Configuration**
+4. Environment Configuration  
    ```bash
    cp .env.example .env
-   # Edit .env with your database credentials and APP_URL
+   ```
+   Edit `.env` with:
+   ```env
+   DB_HOST=127.0.0.1
+   DB_NAME=your_db
+   DB_USER=root
+   DB_PASS=
+   APP_URL=http://localhost/PHP-event-management-app
    ```
 
-5. **Install Dependencies**
+5. Install Dependencies  
    ```bash
    composer install
    ```
 
-6. **Access the Application**
+6. Run the App  
+   Visit in your browser:  
    ```
    http://localhost/PHP-event-management-app
    ```
 
-## 👥 User Roles
+---
 
-### Admin
-- Create and manage programs
-- View all registrations
-- Manage user accounts
-- System configuration
+## User Roles
 
-### Club
-- Create programs for their club
-- Manage club-specific events
-- View registrations for their programs
+### Admin  
+- Manage all programs  
+- View participants  
+- Manage user accounts  
 
-### Student
-- Browse available programs
-- Register for events
-- View registration history
+### Club  
+- Create and manage club-specific events  
+- View participant list  
 
-## 🔒 Security Features
+###  Student  
+- Browse all active events  
+- Register for programs  
+- View registration history  
 
-- **SQL Injection Prevention** - All queries use prepared statements
-- **Input Validation** - Server-side and client-side validation
-- **Session Security** - Secure session management
-- **File Upload Security** - Validated file uploads
-- **XSS Protection** - Output escaping for user data
+---
 
-## 📁 Project Structure
+## Security Highlights
+
+- Prepared Statements to prevent SQL Injection  
+- File Validation for safe image uploads  
+- Session-Based Authentication  
+- Input Validation (Client & Server-side)  
+- XSS Protection via output escaping  
+
+---
+
+## License
+
+This project is open-source and free to use under the MIT License.
+
+---
+
+
+✨ Made with love for better event coordination.
