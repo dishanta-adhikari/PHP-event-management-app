@@ -108,4 +108,4 @@ This project is open-source and free to use under the MIT License.
 ---
 
 
-✨ Made with love for better event coordination.
+Made with ❤️ for better coordination.
