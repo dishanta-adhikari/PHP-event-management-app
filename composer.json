@@ -2,6 +2,7 @@
   "name": "dishanta-adhikari/php-event-management-app",
   "description": "A PHP project for event management.",
   "type": "project",
+  "license": "MIT",
   "require": {
     "php": "^7.4 || ^8.2",
     "vlucas/phpdotenv": "^5.6"
