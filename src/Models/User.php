@@ -33,6 +33,15 @@ class User
         return $stmt->get_result()->fetch_assoc();
     }
 
+    public function findByEmailandID($email, $user_id)
+    {
+        $stmt = $this->con->prepare("SELECT * FROM user WHERE email = ? AND user_id = ?");
+        $stmt->bind_param("si", $email, $user_id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
+    }
+    
+
     public function getUserNameById($user_id)
     {
         $stmt = $this->con->prepare("SELECT name FROM user WHERE user_id = ?");
@@ -46,7 +55,7 @@ class User
     public function create($user_name, $name, $email, $phone, $pass, $user_type)
     {
         $stmt = $this->con->prepare("INSERT INTO user (user_name, name, email, phone, pass, user_type) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssis", $user_name, $name, $email, $phone, $pass, $user_type);
+        $stmt->bind_param("ssssss", $user_name, $name, $email, $phone, $pass, $user_type);
         return $stmt->execute();
     }
 
@@ -63,5 +72,13 @@ class User
         $stmt->bind_param("s", $user_name);
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc();
+    }
+
+
+    public function deleteUserByIdAndEmail($user_id)
+    {
+        $stmt = $this->con->prepare("DELETE FROM user WHERE user_id = ?");
+        $stmt->bind_param("i", $user_id);
+        return $stmt->execute();
     }
 }

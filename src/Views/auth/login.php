@@ -7,10 +7,12 @@ use App\Controllers\LoginController;
 
 $controller = new LoginController($con);
 
-if (isset($_POST['login'])) {
-    $res = $controller->login($_POST['email'], $_POST['pass']);
+if (isset($_POST['login']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+        $res = $controller->login($_POST);
 
         if ($res) {
+            session_regenerate_id(true);
             if ($res["user_type"] === "admin") {  
                 header("location: " . $appUrl . "/src/Views/admin/dashboard");
                 exit();
@@ -20,7 +22,7 @@ if (isset($_POST['login'])) {
             }
         } else {
             echo '<script>alert("Invalid email or password")</script>';
-            echo '<script>window.location.href = "'.$appUrl.'";</script>';
+            echo '<script>window.location.href = "'.$appUrl.'/src/Views/auth/login";</script>';
             exit();
         }
 }
@@ -217,7 +219,7 @@ if (isset($_POST['login'])) {
         <div class="loginbackground">
             <form class="mx-auto" id="loginModal" method="POST">
                 <span class="closelogin" id="closeModal">&times;</span>
-                <h4 class="text-center">Login</h4>
+                <h4 class="text-center">Log In</h4>
                 <div class="mb-3 mt-5">
                     <label for="exampleInputusername1" class="form-label">Email</label>
                     <input type="email" name="email" class="form-control" id="exampleInputEmail1"
@@ -239,9 +241,9 @@ if (isset($_POST['login'])) {
         function myFunction3() {
             var x = document.getElementById("exampleInputPassword3");
             if (x.type === "password") {
-                x.type = "text";
+                return x.type = "text";
             } else {
-                x.type = "password";
+                return x.type = "password";
             }
         }
 

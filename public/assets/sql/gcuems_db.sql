@@ -20,20 +20,21 @@ CREATE TABLE `club` (
   `user_name` varchar(50) NOT NULL,
   `name` varchar(50) NOT NULL,
   `email` varchar(50) NOT NULL,
-  `phone` bigint(20) NOT NULL
+  `phone` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL
 );
 
 --
 -- Dumping data for table `club`
 --
 
-INSERT INTO `club` (`club_id`, `user_name`, `name`, `email`, `phone`) VALUES
-(1, 'sportsclub', 'Sports Club', 'sportsclub@gmail.com', 1234567890),
-(2, 'danceclub', 'Dance club', 'danceclub@gmail.com', 1234567890),
-(3, 'singingclub', 'Singing Club', 'singingclub@gmail.com', 1234567890),
-(4, 'photographyclub', 'Photography Club', 'photographyclub@gmail.com', 1234567890),
-(5, 'artclub', 'Art & Craft Club', 'artclub@gmail.com', 1234567890),
-(6, 'bikeclub', 'Bike Club', 'bikeclub@gmail.com', 1234123412);
+INSERT INTO `club` (`club_id`, `user_name`, `name`, `email`, `phone`, `user_id`) VALUES
+(1, 'sportsclub', 'Sports Club', 'sportsclub@gmail.com', 1234567890, 2),
+(2, 'danceclub', 'Dance club', 'danceclub@gmail.com', 1234567890, 3),
+(3, 'singingclub', 'Singing Club', 'singingclub@gmail.com', 1234567890, 4),
+(4, 'photographyclub', 'Photography Club', 'photographyclub@gmail.com', 1234567890, 5),
+(5, 'artclub', 'Art & Craft Club', 'artclub@gmail.com', 1234567890, 6),
+(6, 'bikeclub', 'Bike Club', 'bikeclub@gmail.com', 1234123412, 7);
 
 -- --------------------------------------------------------
 
@@ -147,7 +148,8 @@ INSERT INTO `user` (`user_id`, `user_name`, `name`, `email`, `phone`, `pass`, `u
 --
 ALTER TABLE `club`
   ADD PRIMARY KEY (`club_id`),
-  ADD UNIQUE KEY `UNIQUE` (`user_name`);
+  ADD UNIQUE KEY `UNIQUE` (`user_name`),
+  ADD KEY `club_user_fk` (`user_id`);
 
 --
 -- Indexes for table `participant`
@@ -201,6 +203,12 @@ ALTER TABLE `user`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `club`
+--
+ALTER TABLE `club`
+  ADD CONSTRAINT `club_user_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `participant`

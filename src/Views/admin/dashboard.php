@@ -2,55 +2,17 @@
 
 require_once __DIR__ . '/_init.php';
 
-if (isset($_POST['save'])) {
-    $email = $_POST['email'];
-    $pass = md5($_POST['pass']);
-    $newpass = md5($_POST['newpass']);
-    $confpass = md5($_POST['confpass']);
+use App\Controllers\UserController;
 
-    // Validate inputs
-    if (empty($email) || empty($pass) || empty($newpass) || empty($confpass)) {
-        echo "<script>alert('Please fill in all fields')</script>";
-    } else {
-        $query = "SELECT * FROM user WHERE email='$email'";
-        $res = mysqli_query($con, $query);
+$userController = new UserController($con);
 
-        if ($row = mysqli_fetch_assoc($res)) {
-            $db_pass = $row['pass'];
+$changePassMessage = null;
 
-            if ($pass === $db_pass) {
-
-                if ($newpass === $confpass) {
-
-                    // Update the query to set the hashed new password
-                    $update_query = "UPDATE user SET `pass` = '$newpass' WHERE `email` = '$email'";
-                    $res = mysqli_query($con, $update_query);
-
-                    if ($res) {
-                        echo "<script>alert('Password changed successfully')</script>";
-                    } else {
-                        echo "<script>alert('Password could not be updated')</script>";
-                    }
-                } else {
-                    echo "<script>alert('New password does not match confirmed password')</script>";
-                }
-            } else {
-                echo "<script>alert('Current password does not match')</script>";
-            }
-        } else {
-            echo "<script>alert('Invalid email')</script>";
-        }
-    }
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
+    $changePassMessage = $userController->updatePassword($_POST);
 }
 
-
-
-
-
 ?>
-
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -177,42 +139,43 @@ if (isset($_POST['save'])) {
             <li><a href="<?php echo $appUrl; ?>/src/Views/admin/participants/index">Participants</a></li>
             <li><a href="<?php echo $appUrl; ?>/src/Views/admin/clubs/create">Create Club</a></li>
             <li><a href="<?php echo $appUrl; ?>/src/Views/admin/clubs/index">Clubs</a></li>
-
             <li><a href="<?php echo $appUrl; ?>/src/Views/admin/create">Create Admin</a></li>
-            <li id="changepass"><a href="#">Change password</a></li>
-            <li><a href="<?php echo $appUrl; ?>/src/Views/admin/delete">Delete account</a></li>
+            <li><a href="#" id="changepass">Change password</a></li>
+            <li><a href="<?php echo $appUrl; ?>/src/Views/admin/delete?id=<?php echo $_SESSION['user_id']; ?>">Delete account</a></li>
         </ul>
     </div>
 
-    <div class="container.fluid">
-        <div class="loginbackground">
-            <form class="mx-auto changepass" id="loginModal" method="POST">
-                <span class="closelogin" id="closeModal">&times;</span>
-                <h4 class="text-center mb-4">Change Your Password</h4>
-                <div class="mb-3">
-                    <label for="exampleInputEmail1" class="form-label">Confirm Your Email</label>
-                    <input type="email" name="email" class="form-control" id="exampleInputEmail1"
-                        aria-describedby="emailHelp" required>
-                    <label for="exampleInputPassword1" class="form-label">Current Password</label>
-                    <input type="password" name="pass" class="form-control" id="exampleInputPassword1" required>
-                    <label for="exampleInputPassword2" class="form-label">New Password</label>
-                    <input type="password" name="newpass" class="form-control" id="exampleInputPassword2" required>
-                    <label for="exampleInputPassword3" class="form-label">Confirm New Password</label>
-                    <input type="password" name="confpass" class="form-control" id="exampleInputPassword3" required>
-                </div>
-                <button type="submit" value="save" name="save" class="btn btn-primary mt-4">SAVE</button>
-                <p>Go to <a href="<?php $appUrl ?>/src/Views/admin/dashboard">Dashboard</a></p>
-            </form>
-        </div>
+    <!-- Password Change Modal -->
+    <div class="loginbackground" style="display: none;">
+        <form class="mx-auto changepass" id="loginModal" method="POST" style="display: none;">
+            <span class="closelogin" id="closeModal" style="position: absolute; top: 10px; right: 20px; font-size: 2rem; cursor: pointer;">&times;</span>
+            <h4 class="text-center mb-4">Change Your Password</h4>
+            <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">Confirm Your Email</label>
+                <input type="email" name="email" class="form-control" id="exampleInputEmail1"
+                    aria-describedby="emailHelp" required>
+                <label for="exampleInputPassword1" class="form-label">Current Password</label>
+                <input type="password" name="pass" class="form-control" id="exampleInputPassword1" required>
+                <label for="exampleInputPassword2" class="form-label">New Password</label>
+                <input type="password" name="newpass" class="form-control" id="exampleInputPassword2" required>
+                <label for="exampleInputPassword3" class="form-label">Confirm New Password</label>
+                <input type="password" name="confpass" class="form-control" id="exampleInputPassword3" required>
+            </div>
+            <button type="submit" value="save" name="save" class="btn btn-primary mt-4">SAVE</button>
+            <p>Go to <a href="<?php echo $appUrl; ?>/src/Views/admin/dashboard">Dashboard</a></p>
+        </form>
     </div>
-    <!-- change paddword script -->
-    <script src="<?php $appUrl ?>/public/assets/JS/changepass.js"></script>
+    <!-- change password script -->
+    <script src="<?php echo $appUrl; ?>/public/assets/JS/changepass.js"></script>
 
 
     <div class="content">
-        <h1>Welcome Admin</h1>
+        <h1 class="text-center">Welcome Admin</h1>
         <div id="liveClock"></div>
 
+        <?php if ($changePassMessage): ?>
+            <div class="alert alert-info text-center"><?php echo $changePassMessage; ?></div>
+        <?php endif; ?>
     </div>
 
     <script src="<?php $appUrl ?>/public/assets/JS/clock.js"></script>
@@ -228,7 +191,15 @@ if (isset($_POST['save'])) {
         integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
         crossorigin="anonymous"></script>
 
-
+    <script>
+        function detectBackButton() {
+            if (window.performance && window.performance.navigation.type === 2) {
+                window.location.href = "<?php echo $appUrl; ?>/src/Views/admin/dashboard";
+            }
+        }
+        // Call the function on page load
+        window.onload = detectBackButton;
+    </script>
 </body>
 
 </html>

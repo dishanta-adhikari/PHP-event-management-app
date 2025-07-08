@@ -13,9 +13,18 @@ class LoginController
         $this->userModel = new User($db);
     }
 
-    public function login($email, $pass)
+    public function login($values)
     {
+
+        if (empty($values['email']) || empty($values['pass'])) {
+            return "Please fill in all fields.";
+        }
+
+        $email = trim($values['email']);
+        $pass = trim($values['pass']);
+
         $user = $this->userModel->findByEmail($email);
+
         if (!$user) {
             return false;
         }

@@ -24,7 +24,7 @@ if (isset($_POST['delete_program_id'])) {
 
 
 $resClubs = $clubController->getClubs();
-$res2 = $programController->getPrograms();
+$res2 = $programController->getPrograms();  
 
 ?>
 
@@ -123,7 +123,7 @@ $res2 = $programController->getPrograms();
                             <ul class="dropdown-menu bg-dark">
                                 <?php while ($club = mysqli_fetch_assoc($resClubs)) { ?>
                                     <li>
-                                        <a href="<?php echo $appUrl; ?>/src/Views/admin/programes/dropdown?id=<?php echo $club['user_id']; ?>"
+                                        <a href="<?php echo $appUrl; ?>/src/Views/admin/programes/filter?id=<?php echo $club['user_id']; ?>"
                                             style="color:white;" class="dropdown-item mb-2 text-center drop-link">
                                             <?php echo htmlspecialchars($club['name']); ?>
                                         </a>

@@ -2,24 +2,36 @@
 
 require_once __DIR__ . '/_init.php';
 
+use App\Controllers\UserController;
+
+$userController = new UserController($con);
+
 if (isset($_POST['submit'])) {
 
-    $user_name = $_POST['username'];
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $phone = $_POST['phone'];
-    $pass = md5($_POST['pass']);
+    $user_name = trim($_POST['username']);
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $phone = trim($_POST['phone']);
+    $pass = md5($_POST['pass']); // md5 for password hashing
 
-    $duplicate = mysqli_query($con, "SELECT * FROM user WHERE user_name='$user_name' OR email='$email'");
+    // Check for existing username or email to prevent duplicates using UserController
+    $existingUserByEmail = $userController->getUserByEmail($email);
+    $existingUserByUsername = $userController->findByUsername($user_name);
 
-    if (mysqli_num_rows($duplicate) > 0) {
-        echo "<script>alert('Userame and Email is already Taken')</script>";
+    if ($existingUserByEmail || $existingUserByUsername) {
+        echo "<script>alert('Username or Email is already taken')</script>";
     } else {
-        $query = "INSERT INTO user VALUES ('','$user_name','$name', '$email','$phone','$pass', 'admin')";
-        $res = mysqli_query($con, $query);
-        echo "<script>alert('New Admin Added Successfully')</script>";
-    }
+        // Use User model to create user
+        $userCreated = $userController->create($user_name, $name, $email, $phone, $pass, 'admin');
 
+        if ($userCreated) {
+            echo "<script>alert('New Admin Added Successfully')</script>";
+            echo "<script>window.location.href='". $appUrl . "/src/Views/admin/dashboard' </script>";
+        } else {
+            echo "<script>alert('Failed to add new admin. Please try again.')</script>";
+            echo "<script>window.location.href='". $appUrl . "/src/Views/admin/create' </script>";
+        }
+    }
 }
 
 ?>
@@ -280,7 +292,7 @@ if (isset($_POST['submit'])) {
                     <button type="submit" value="submit" name="submit" class="btn btn-primary mt-4">submit</button>
                 </div>
                 <!-- <p>if not registered ! <a href="./signup.html">Sign Up</a></p> -->
-                <p>go to <a href="./admindash">Dashboard</a></p>
+                <p>go to <a href="<?php echo $appUrl; ?>/src/Views/admin/dashboard">Dashboard</a></p>
             </form>
         </div>
     </div>
@@ -288,16 +300,16 @@ if (isset($_POST['submit'])) {
         function myFunction3() {
             var x = document.getElementById("exampleInputPassword3");
             if (x.type === "password") {
-                x.type = "text";
+                return x.type = "text";
             } else {
-                x.type = "password";
+                return x.type = "password";
             }
         }
 
         const closeModal = document.getElementById('closeModal');
         closeModal.addEventListener('click', () => {
             loginModal.style.display = 'none';
-            window.location.href = "./admindash";
+            window.location.href = "<?php echo $appUrl; ?>/src/Views/admin/dashboard";
 
         });
     </script>

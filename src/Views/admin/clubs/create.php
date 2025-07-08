@@ -2,41 +2,47 @@
 
 require_once __DIR__ . '/../_init.php';
 
+use App\Controllers\UserController;
+use App\Controllers\ClubController;
+
+$userController = new UserController($con);
+$clubController = new ClubController($con);
+
 if (isset($_POST['submit'])) {
+    $user_name = trim($_POST['user_name']);
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $phone = trim($_POST['phone']);
+    $pass = md5($_POST['pass']); // md5 for password hashing
 
-    $user_name = $_POST['user_name'];
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $phone = $_POST['phone'];
-    $pass = md5($_POST['pass']); //md5 for password hashing
+    // Check for existing email to prevent duplicates using UserController
+    $existingUser = $userController->getUserByEmail($email);
 
-
-    // Sanitize user inputs to prevent SQL injection
-    $user_name = mysqli_real_escape_string($con, $user_name);
-    $name = mysqli_real_escape_string($con, $name);
-    $email = mysqli_real_escape_string($con, $email);
-    $phone = mysqli_real_escape_string($con, $phone);
-
-    // Check for existing email to prevent duplicates
-    $duplicate = mysqli_query($con, "SELECT * FROM user WHERE email='$email'");
-
-    if (mysqli_num_rows($duplicate) > 0) {
+    if ($existingUser) {
         echo "<script>alert('Email is already taken')</script>";
     } else {
+        // Use User model to create user
+        $userCreated = $userController->create($user_name, $name, $email, $phone, $pass, 'club');
 
-        // Inserting into the database using prepared statements
-        $query1 = "INSERT INTO user (user_name, name, email, phone, pass, user_type) VALUES (?, ?, ?, ?, ?, 'club')";
-        $stmt1 = mysqli_prepare($con, $query1);
-        mysqli_stmt_bind_param($stmt1, "sssss", $user_name, $name, $email, $phone, $pass);
-        $res1 = mysqli_stmt_execute($stmt1);
+        if ($userCreated) {
+            // Get the user_id of the newly created user
+            $newUser = $userController->getUserByEmail($email);
+            $user_id = $newUser ? $newUser['user_id'] : null;
 
-        $query2 = "INSERT INTO club (user_name, name, email, phone) VALUES (?, ?, ?, ?)";
-        $stmt2 = mysqli_prepare($con, $query2);
-        mysqli_stmt_bind_param($stmt2, "ssss", $user_name, $name, $email, $phone);
-        $res2 = mysqli_stmt_execute($stmt2);
+            // Insert into club table using Club model
+            if ($user_id) {
+                // You may want to add a createClub method in Club model, but for now, use direct query
+                $clubCreated = $clubController->createClub($user_name, $name, $email, $phone, $user_id);
 
-        if ($res1 && $res2) {
-            echo "<script>alert('New Club Added Successfully')</script>";
+                if ($clubCreated) {
+                    echo "<script>alert('New Club Added Successfully')</script>";
+                    echo "<script>window.location.href = '<?php echo $appUrl; ?>/src/Views/admin/clubs/index';</script>";
+                } else {
+                    echo "<script>alert('Error adding club to club table')</script>";
+                }
+            } else {
+                echo "<script>alert('Error retrieving new user ID')</script>";
+            }
         } else {
             echo "<script>alert('Error adding club')</script>";
         }
@@ -298,7 +304,7 @@ if (isset($_POST['submit'])) {
                     <button type="submit" value="submit" name="submit" class="btn btn-primary mt-4">submit</button>
                 </div>
                 <!-- <p>if not registered ! <a href="./signup.html">Sign Up</a></p> -->
-                <p>go to <a href="./admindash">Dashboard</a></p>
+                <p>go to <a href="<?php echo $appUrl; ?>/src/Views/admin/dashboard">Dashboard</a></p>
             </form>
         </div>
     </div>
@@ -307,20 +313,20 @@ if (isset($_POST['submit'])) {
         function myFunction3() {
             var x = document.getElementById("exampleInputPassword3");
             if (x.type === "password") {
-                x.type = "text";
+                return x.type = "text";
             } else {
-                x.type = "password";
+                return x.type = "password";
             }
         }
 
         const closeModal = document.getElementById('closeModal');
         closeModal.addEventListener('click', () => {
-            window.location.href = "./admindash";
+            window.location.href = "<?php echo $appUrl; ?>/src/Views/admin/dashboard";
 
         });
     </script>
 
-    <script src="./assets/JS/pressbackgoback.js"></script>
+    <script src="<?php echo $appUrl; ?>/public/assets/JS/pressbackgoback.js"></script>
 </body>
 
 </html>

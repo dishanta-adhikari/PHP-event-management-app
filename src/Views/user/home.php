@@ -13,16 +13,12 @@ $programController = new ProgramController($con);
 
 $res2 = $programController->getPrograms();
 
-if (isset($_POST['login'])) {
-    $email = $_POST['email'];
-    $pass = $_POST['pass'];
-
-    if (empty($email) || empty($pass)) {
-        echo '<script>alert("Please fill in both email and password fields")</script>';
-    } else {
-        $res = $loginController->login($_POST['email'], $_POST['pass']);
+if (isset($_POST['login']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+   
+        $res = $loginController->login($_POST);
 
         if ($res) {
+            session_regenerate_id(true);
             if ($res["user_type"] === "admin") {   //user type admin or club
                 header("location: " . $appUrl . "/src/Views/admin/dashboard");
                 exit();
@@ -32,11 +28,11 @@ if (isset($_POST['login'])) {
             }
         } else {
             echo '<script>alert("Invalid email or password")</script>';
-            echo '<script>window.location.href = "'.$appUrl.'";</script>';
+            echo '<script>window.location.href = "' . $appUrl . '/src/Views/auth/login";</script>';
             exit();
         }
-    }
 }
+
 
 
 ?>
@@ -70,7 +66,7 @@ if (isset($_POST['login'])) {
     <script>
         if (window.performance && window.performance.navigation.type === 2) {
             function detectBackButton() {
-                window.location.href = './logout';
+                window.location.href = '<?php echo $appUrl; ?>';
             }
             window.onload = detectBackButton;
         }
@@ -317,7 +313,7 @@ if (isset($_POST['login'])) {
             <li class="hideOnMobile"><a href="<?php echo $appUrl; ?>">Home</a></li>
             <li class="hideOnMobile"><a href="#sectionId">Events</a>
             </li>
-            <!-- <li class="hideOnMobile" id="aboutButton"><a href="#">About</a></li> -->
+            <li class="hideOnMobile" id="aboutButton"><a href="#">About</a></li>
             <li class="hideOnMobile" id="openModal"><a href="#">Contact</a></li>
 
             <li class="hideOnMobile" id="loginButton"><a class="active-link" href="#">Login</a></li>
@@ -388,7 +384,7 @@ if (isset($_POST['login'])) {
         <div class="loginbackground">
             <form class="mx-auto" id="loginModal" method="POST">
                 <span class="closelogin" id="closeModal">&times;</span>
-                <h4 class="text-center">Login</h4>
+                <h4 class="text-center">Log In</h4>
                 <div class="mb-3 mt-4">
                     <label for="exampleInputusername1" class="form-label">Email</label>
                     <input type="email" name="email" class="form-control" id="exampleInputEmail1"
@@ -477,14 +473,14 @@ if (isset($_POST['login'])) {
 
 
     <!--On pressed 'About' at the navigation bar team sliders are poped -->
-    <div class=" aboutbackground">
+    <div class="aboutbackground">
         <div class="wrapper" id="aboutModal">
             <span class="closeabout" id="closeabout">&times;</span>
             <!-- <h1>Our Team</h1> -->
             <div class="team">
                 <div class="team_member team_member1">
                     <div class="team_img">
-                        <img src="assets/images/dishanta1-removebg-preview.jpg" alt="Team_image">
+                        <img src="<?php echo $appUrl ?>/public/assets/images/dishanta1-removebg-preview.jpg" alt="Team_image">
                     </div>
                     <h3>Dishanta Adhikari</h3>
                     <p class="role">developer | Roll no. 20 BCA 5th sem</p>
@@ -498,20 +494,7 @@ if (isset($_POST['login'])) {
                     <a class="social-link" href="https://www.linkedin.com/in/dishanta-adhikari-607691229"><i
                             class="fa-brands fa-linkedin"></i></a>
                 </div>
-                <div class="team_member team_member2">
-                    <div class="team_img">
-                        <img src="assets/images/shujan-removebg-preview.jpg" alt="Team_image">
-                    </div>
-                    <h3>Shujan Kr Ray</h3>
-                    <p class="role">developer and Tester | Roll no. 49 BCA 5th sem</p>
-                    <p>MERN Stack Developer | React.js, MongoDB, Express, Node.js | Full Stack Developer | Java DSA |
-                        Aspiring software engineer | Roll no. 49 BCA 5th sem</p>
-                    <a class="social-link" href="https://www.facebook.com/shujan.kumarray.9"><i
-                            class="fa-brands fa-facebook"></i></a>
-                    <a class="social-link" href="#"><i class="fa-brands fa-instagram"></i></a>
-                    <a class="social-link" href="https://www.linkedin.com/in/shujankumarray"><i
-                            class="fa-brands fa-linkedin"></i></a>
-                </div>
+
                 <!-- <div class="team_member">
                 <div class="team_img">
                     <img src="https://i.imgur.com/2Necikc.png" alt="Team_image">

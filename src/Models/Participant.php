@@ -26,4 +26,26 @@ class Participant
         $stmt->bind_param("ssssssii", $name, $email, $phone, $branch, $sem, $college, $program_id, $user_id);
         return $stmt->execute();
     }
+
+    public function getAllParticipants()
+    {
+        $stmt = $this->con->prepare("SELECT * FROM participant");
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+
+    public function getParticipantsByProgramId($program_id)
+    {
+        $stmt = $this->con->prepare("SELECT * FROM participant WHERE program_id = ?");
+        $stmt->bind_param("i", $program_id);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+
+    public function deleteParticipantById($participant_id)
+    {
+        $stmt = $this->con->prepare("DELETE FROM participant WHERE participant_id = ?");
+        $stmt->bind_param("i", $participant_id);
+        return $stmt->execute();
+    }
 }

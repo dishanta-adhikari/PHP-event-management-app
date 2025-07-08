@@ -22,4 +22,20 @@ class ClubController
     {
         return $this->clubModel->getClubById($user_id);
     }
+
+    public function createClub($user_name, $name, $email, $phone, $user_id)
+    {
+        return $this->clubModel->createClub($user_name, $name, $email, $phone, $user_id);
+    }
+
+    public function deleteClubById($club_id)
+    {
+        return $this->clubModel->deleteClubById($club_id);
+    }
+
+    public function deleteClub($club_id)
+    {
+        return $this->clubModel->deleteClub($club_id);
+    }
+
 }

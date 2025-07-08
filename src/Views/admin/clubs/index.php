@@ -2,49 +2,41 @@
 
 require_once __DIR__ . '/../_init.php';
 
+use App\Controllers\ClubController;
+use App\Controllers\UserController;
+
+$clubController = new ClubController($con);
+$userController = new UserController($con);
+
 if (isset($_POST['delete']) && isset($_POST['club_id'])) {
     $club_id = $_POST['club_id'];
 
-    // Retrieve the email associated with the club
-    $email_query = "SELECT email FROM club WHERE club_id = ?";
-    $stmt_email = mysqli_prepare($con, $email_query);
+    
+    // Use the controller to get the club info and extract user_id
+    $clubInfo = $clubController->getClubById($club_id);
+    $user_id = isset($clubInfo['user_id']) ? $clubInfo['user_id'] : null;
 
-    if ($stmt_email) {
-        mysqli_stmt_bind_param($stmt_email, "i", $club_id);
-        mysqli_stmt_execute($stmt_email);
-        $result = mysqli_stmt_get_result($stmt_email);
-        $row = mysqli_fetch_assoc($result);
-        $email = $row['email'];
+    $resultClub = $clubController->deleteClubById($club_id);
+    $resultUser = $user_id ? $userController->deleteUserByIdAndEmail($user_id) : false;
+    $result = $resultClub && $resultUser;
 
-        // Delete data from both 'club' and 'user' tables where the email IDs match
-        $delete_query = "DELETE club, user FROM club INNER JOIN user ON club.email = user.email WHERE club.email = ?";
-        $stmt_delete = mysqli_prepare($con, $delete_query);
-
-        if ($stmt_delete) {
-            mysqli_stmt_bind_param($stmt_delete, "s", $email);
-            $delete_result = mysqli_stmt_execute($stmt_delete);
-
-            if ($delete_result) {
-                echo '<script>alert("Club data deleted successfully")</script>';
-                echo '<script>window.location.href = "./viewclub";</script>';
-                exit;
-            } else {
-                echo '<script>alert("Failed to delete club ")</script>';
-            }
-
-            mysqli_stmt_close($stmt_delete);
-        } else {
-            echo '<script>alert("Failed to prepare delete statement")</script>';
-        }
-
-        mysqli_stmt_close($stmt_email);
+    if ($result) {
+        echo '<script>alert("Failed to delete club");</script>';
     } else {
-        echo '<script>alert("Failed to fetch email")</script>';
+        echo '<script>alert("Club data deleted successfully")</script>'; 
+        echo '<script>window.location.href = "' . $appUrl . '/src/Views/admin/clubs/index.php";</script>';
+        exit;
     }
 }
 
-$query = "SELECT * FROM club";
-$res = mysqli_query($con, $query);
+// Use the controller to get all clubs
+$clubs = $clubController->getClubs();
+
+// Helper function to get full club info using controller/model
+function getClubFullInfo($clubController, $club_id) {
+    $club = $clubController->getClubById($club_id);
+    return $club ? $club : [];
+}
 ?>
 
 
@@ -56,7 +48,7 @@ $res = mysqli_query($con, $query);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="./assets/images/cropped-GCU-Logo-circle.png">
+    <link rel="icon" href="<?php echo $appUrl;?>/public/assets/images/cropped-GCU-Logo-circle.png">
     <title>View Clubs</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
@@ -132,47 +124,82 @@ $res = mysqli_query($con, $query);
                         <div class="table-responsive">
                             <table class="table table-bordered text-center">
                                 <tr>
-                                    <td class="bg-dark text-white"> Club ID </td>
                                     <td class="bg-dark text-white"> Club Name </td>
                                     <td class="bg-dark text-white"> Email </td>
                                     <td class="bg-dark text-white"> Phone </td>
                                     <td class="bg-dark text-white"> Delete </td>
                                 </tr>
-                                <tr>
-
-                                    <?php
-                                    // Fetch all the clubs from the database and display them
-                                    while ($row = mysqli_fetch_assoc($res)) {
-                                        ?>
-                                    <tr>
-                                        <td>
-                                            <?php echo $row['club_id']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $row['name']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $row['email']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $row['phone']; ?>
-                                        </td>
-                                        <td>
-                                            <!-- Delete button -->
-                                            <form class="del" method="post" action="">
-                                                <input type="hidden" name="club_id" id="clubId"
-                                                    value="<?php echo $row['club_id']; ?>">
-                                                <input type="hidden" name="name" id="clubName"
-                                                    value="<?php echo $row['name']; ?>">
-                                                <button type="submit" name="delete" class="btn btn-danger"
-                                                    onclick="confirmDelete(<?php echo $row['club_id']; ?>, '<?php echo $row['name']; ?>')">Delete</button>
-                                            </form>
-                                    </tr>
-                                    <?php
+                                <?php
+                                // Fetch all the clubs from the controller and display them
+                                if (!empty($clubs)) {
+                                    if ($clubs instanceof mysqli_result) {
+                                        while ($row = $clubs->fetch_assoc()) {
+                                            $club_id = isset($row['user_id']) ? $row['user_id'] : '';
+                                            $name = isset($row['name']) ? $row['name'] : '';
+                                            // Get full info using controller/model
+                                            $clubInfo = getClubFullInfo($clubController, $club_id);
+                                            $email = isset($clubInfo['email']) ? $clubInfo['email'] : '';
+                                            $phone = isset($clubInfo['phone']) ? $clubInfo['phone'] : '';
+                                            ?>
+                                            <tr>
+                                                <td>
+                                                    <?php echo htmlspecialchars($name); ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo htmlspecialchars($email); ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo htmlspecialchars($phone); ?>
+                                                </td>
+                                                <td>
+                                                    <!-- Delete button -->
+                                                    <form class="del" method="post" action="">
+                                                        <input type="hidden" name="club_id" id="clubId_<?php echo htmlspecialchars($club_id); ?>"
+                                                            value="<?php echo htmlspecialchars($club_id); ?>">
+                                                        <input type="hidden" name="name" id="clubName_<?php echo htmlspecialchars($club_id); ?>"
+                                                            value="<?php echo htmlspecialchars($name); ?>">
+                                                        <button type="submit" name="delete" class="btn btn-danger"
+                                                            onclick="return confirmDelete('<?php echo addslashes($club_id); ?>', '<?php echo addslashes($name); ?>')">Delete</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            <?php
+                                        }
+                                    } elseif (is_array($clubs)) {
+                                        foreach ($clubs as $row) {
+                                            $club_id = isset($row['user_id']) ? $row['user_id'] : '';
+                                            $name = isset($row['name']) ? $row['name'] : '';
+                                            $clubInfo = getClubFullInfo($clubController, $club_id);
+                                            $email = isset($clubInfo['email']) ? $clubInfo['email'] : '';
+                                            $phone = isset($clubInfo['phone']) ? $clubInfo['phone'] : '';
+                                            ?>
+                                            <tr>
+                                                <td>
+                                                    <?php echo htmlspecialchars($name); ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo htmlspecialchars($email); ?>
+                                                </td>
+                                                <td>
+                                                    <?php echo htmlspecialchars($phone); ?>
+                                                </td>
+                                                <td>
+                                                    <!-- Delete button -->
+                                                    <form class="del" method="post" action="">
+                                                        <input type="hidden" name="club_id" id="clubId_<?php echo htmlspecialchars($club_id); ?>"
+                                                            value="<?php echo htmlspecialchars($club_id); ?>">
+                                                        <input type="hidden" name="name" id="clubName_<?php echo htmlspecialchars($club_id); ?>"
+                                                            value="<?php echo htmlspecialchars($name); ?>">
+                                                        <button type="submit" name="delete" class="btn btn-danger"
+                                                            onclick="return confirmDelete('<?php echo htmlspecialchars($club_id, ENT_QUOTES); ?>', '<?php echo htmlspecialchars($name, ENT_QUOTES); ?>')">Delete</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            <?php
+                                        }
                                     }
-                                    ?>
-
-                                </tr>
+                                }
+                                ?>
                             </table>
                         </div>
                     </div>
@@ -187,26 +214,14 @@ $res = mysqli_query($con, $query);
     <script>
         const closeModal = document.getElementById('closeModal');
         closeModal.addEventListener('click', () => {
-            window.location.href = "./admindash";
-
+            window.location.href = "<?php echo $appUrl; ?>/src/Views/admin/dashboard";
         });
 
-
         function confirmDelete(clubId, clubName) {
-            if (confirm('Are you sure you want to delete this Club ?')) {
-                // Set the program_id to the hidden input field and submit the form
-                document.getElementById('clubId').value = clubId;
-                document.getElementById('deleteForm').submit();
-            }
-            else {
-                // Prevent form submission if cancel is clicked
-                event.preventDefault();
-            }
+            return confirm('Are you sure you want to delete the club "' + clubName + '"?');
         }
-
-
     </script>
-    <script src="./assets/JS/printpage.js"></script>
+    <script src="<?php echo $appUrl; ?>/public/assets/JS/printpage.js"></script>
 </body>
 
 </html>
