@@ -2,39 +2,17 @@
 
 require_once __DIR__ . '/_init.php';
 
+use App\Controllers\UserController;
+
+$userController = new UserController($con);
+
+$message = null;
+
 if (isset($_POST['save'])) {
-    $email = mysqli_real_escape_string($con, $_POST['email']);
-    $pass = mysqli_real_escape_string($con, md5($_POST['pass']));
-    $newpass = mysqli_real_escape_string($con, md5($_POST['newpass']));
-    $confpass = mysqli_real_escape_string($con, md5($_POST['confpass']));
+    // Use the controller's updatePassword method as defined in UserController
+    $result = $userController->updatePassword($_POST);
+    $message = $result;
 
-    $query = "SELECT * FROM user WHERE email='$email'";
-    $res = mysqli_query($con, $query);
-
-    if (mysqli_num_rows($res) == 1) {
-        $row = mysqli_fetch_assoc($res);
-        $db_password = $row['pass'];
-
-        if ($pass === $db_password) {
-            if ($newpass === $confpass) {
-                // $hashed_password = password_hash($newpass, PASSWORD_DEFAULT);
-                $update_query = "UPDATE user SET `pass` = '$confpass' WHERE `email` = '$email'";
-                $update_result = mysqli_query($con, $update_query);
-
-                if ($update_result) {
-                    echo "<script>alert('Password changed successfully')</script>";
-                } else {
-                    echo "<script>alert('Failed to update password')</script>";
-                }
-            } else {
-                echo "<script>alert('New password and confirmation do not match')</script>";
-            }
-        } else {
-            echo "<script>alert('Current password is incorrect')</script>";
-        }
-    } else {
-        echo "<script>alert('Enter a valid email address')</script>";
-    }
 }
 ?>
 
@@ -171,10 +149,9 @@ if (isset($_POST['save'])) {
             <span>
                 <?php
                 $user_id = $_SESSION['user_id'];
-                $query = "SELECT * FROM user WHERE user_id = '$user_id'";
-                $res = mysqli_query($con, $query);
-                $user = mysqli_fetch_assoc($res);
-                echo $user['name']; // Display the retrieved name
+                // Use controller to get user by id
+                $user = $userController->getUserById($user_id);
+                echo $user ? $user['name'] : ''; // Display the retrieved name
                 ?>
             </span> </a>
 
@@ -190,16 +167,17 @@ if (isset($_POST['save'])) {
         <ul class="list">
             <li><a href="<?php echo $appUrl; ?>/src/Views/club/programes/index">Programes</a></li>
             <li><a href="<?php echo $appUrl; ?>/src/Views/club/participants/index">Participants</a></li>
-            <li><a href="<?php echo $appUrl; ?>/src/Views/club/programes/index">Create Program</a></li>
+            <li><a href="<?php echo $appUrl; ?>/src/Views/club/programes/create">Create Program</a></li>
             <li id="changepass"><a href="#">Change password</a></li>
             <li><a href="<?php echo $appUrl; ?>/src/Views/club/delete">Delete account</a></li>
         </ul>
     </div>
 
 
-    <div class="container.fluid">
+    <div class="container-fluid">
         <div class="loginbackground">
             <form class="mx-auto changepass" id="loginModal" method="POST">
+                
                 <span class="closelogin" id="closeModal">&times;</span>
                 <h4 class="text-center mb-4">Change Your Password</h4>
                 <div class="mb-3">
@@ -224,16 +202,17 @@ if (isset($_POST['save'])) {
         <h1>Welcome User
             <?php
             $user_id = $_SESSION['user_id'];
-            $query1 = "SELECT name FROM user WHERE user_id = '$user_id'";
-            $res1 = mysqli_query($con, $query1);
-
-            if ($res1) {
-                $user1 = mysqli_fetch_assoc($res1);
-                echo $user1['name']; // Display the retrieved name
-            } ?>
+            // Use controller to get user by id
+            $user1 = $userController->getUserById($user_id);
+            echo $user1 ? $user1['name'] : '';
+            ?>
         </h1>
         <div id="liveClock"></div>
-
+        <?php if ($message) : ?>
+                    <div class="alert alert-danger">
+                        <?php echo $message; ?>
+                    </div>
+                <?php endif; ?>
 
     </div>
 

@@ -39,6 +39,16 @@ class ProgramController
         return $this->programModel->getProgramImage($program_id);
     }
 
+    public function isDuplicateProgram($name, $time, $venue)
+    {
+        return $this->programModel->isDuplicateProgram($name, $time, $venue);
+    }
+
+    public function addProgram($program_data)
+    {
+        return $this->programModel->addProgram($program_data);
+    }
+
     public function deleteProgram($program_id)
     {
         return $this->programModel->deleteProgram($program_id);

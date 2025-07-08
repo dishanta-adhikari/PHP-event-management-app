@@ -1,18 +1,17 @@
 <?php
-require_once('connection.php');
-session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    echo '<script>alert("You are logged Out ! Please log in Again");</script>';
-    echo '<script>window.location.href = "./index";</script>';
-    exit;
-}
+require_once __DIR__ . '/../_init.php';
+
+use App\Controllers\ProgramController;
+
+
+$programController = new ProgramController($con);
 
 if (isset($_POST['submit'])) {
     // Gather form data
     $name = $_POST['name'];
     $date = $_POST['date'];
-    $time = $time = date("h:i A", strtotime($_POST['time']));
+    $time = date("h:i A", strtotime($_POST['time']));
     $venue = $_POST['venue'];
     $staff_coordinator = $_POST['staff_coordinator'];
     $phone1 = $_POST['phone1'];
@@ -25,36 +24,32 @@ if (isset($_POST['submit'])) {
     // File upload handling
     $file_name = $_FILES['image']['name'];
     $file_tmp = $_FILES['image']['tmp_name'];
-    $file_destination = "./assets/images/EventImages/" . $file_name;
+    $file_destination = __DIR__."/../../../../public/assets/images/EventImages/" . $file_name;
     move_uploaded_file($file_tmp, $file_destination);
 
-
-    // Prepare and bind parameters for duplicate check
-    $check_duplicate = $con->prepare("SELECT * FROM program WHERE name=? AND time=? AND venue=?");
-    $check_duplicate->bind_param("sss", $name, $time, $venue);
-    $check_duplicate->execute();
-    $check_duplicate->store_result();
-
-    if ($check_duplicate->num_rows > 0) {
+    // Use ProgramController for duplicate check and insert
+    if ($programController->isDuplicateProgram($name, $time, $venue)) {
         echo "<script>alert('Name, Venue, and Time are already booked')</script>";
     } else {
-        // Insert new program using prepared statement
-        $insert_query = "INSERT INTO program (name, date, time, venue, image, staff_coordinator,phone1, student_coordinator,phone2, user_id) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        $insert_statement = $con->prepare($insert_query);
-        $insert_statement->bind_param("sssssssssi", $name, $date, $time, $venue, $file_destination, $staff_coordinator, $phone1, $student_coordinator, $phone1, $user_id);
-
-        if ($insert_statement->execute()) {
+        $inserted = $programController->addProgram([
+            'name' => $name,
+            'date' => $date,
+            'time' => $time,
+            'venue' => $venue,
+            'image' => $file_destination,
+            'staff_coordinator' => $staff_coordinator,
+            'phone1' => $phone1,
+            'student_coordinator' => $student_coordinator,
+            'phone2' => $phone2,
+            'user_id' => $user_id
+        ]);
+        if ($inserted) {
             echo "<script>alert('New Program Added Successfully')</script>";
         } else {
             echo "<script>alert('Failed to add new program')</script>";
         }
-        $insert_statement->close();
     }
-    $check_duplicate->close();
-
 }
-
 ?>
 
 
@@ -65,7 +60,7 @@ if (isset($_POST['submit'])) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="./assets/images/cropped-GCU-Logo-circle.png">
+    <link rel="icon" href="<?php echo $appUrl; ?>/public/assets/images/cropped-GCU-Logo-circle.png">
     <title>New Program</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
@@ -321,7 +316,7 @@ if (isset($_POST['submit'])) {
                     <button type="submit" value="submit" name="submit" class="btn btn-primary mt-4">ADD</button>
                 </div>
 
-                <p>go to <a href="./clubdash">Dashboard</a></p>
+                <p>go to <a href="<?php echo $appUrl; ?>/src/Views/club/dashboard">Dashboard</a></p>
             </form>
         </div>
     </div>
@@ -342,7 +337,7 @@ if (isset($_POST['submit'])) {
     <script>
         const closeModal = document.getElementById('closeModal');
         closeModal.addEventListener('click', () => {
-            window.location.href = "./clubdash";
+            window.location.href = "<?php echo $appUrl; ?>/src/Views/club/dashboard";
         });
     </script>
 </body>

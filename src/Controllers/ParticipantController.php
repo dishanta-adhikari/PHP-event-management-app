@@ -33,6 +33,11 @@ class ParticipantController
         return $this->participantModel->register($name, $email, $phone, $branch, $sem, $college, $program_id, $user_id);
     }
 
+    public function deleteParticipantsByProgramId($program_id)
+    {
+        return $this->participantModel->deleteParticipantsByProgramId($program_id);
+    }
+
     public function deleteParticipantById($participant_id)
     {
         return $this->participantModel->deleteParticipantById($participant_id);

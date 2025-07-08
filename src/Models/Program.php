@@ -46,6 +46,21 @@ class Program
         return $stmt->get_result()->fetch_assoc();
     }
 
+    public function isDuplicateProgram($name, $time, $venue)
+    {
+        $stmt = $this->con->prepare("SELECT * FROM program WHERE name = ? AND time = ? AND venue = ?");
+        $stmt->bind_param("sss", $name, $time, $venue);
+        $stmt->execute();
+        return $stmt->get_result()->num_rows > 0;
+    }
+
+    public function addProgram($program_data)
+    {
+        $stmt = $this->con->prepare("INSERT INTO program (name, date, time, venue, image, staff_coordinator, phone1, student_coordinator, phone2, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssssssssi", $program_data['name'], $program_data['date'], $program_data['time'], $program_data['venue'], $program_data['image'], $program_data['staff_coordinator'], $program_data['phone1'], $program_data['student_coordinator'], $program_data['phone2'], $program_data['user_id']);
+        return $stmt->execute();
+    }
+
     public function deleteProgram($program_id)
     {
         $stmt = $this->con->prepare("DELETE FROM program WHERE program_id = ?");

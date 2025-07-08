@@ -48,4 +48,11 @@ class Participant
         $stmt->bind_param("i", $participant_id);
         return $stmt->execute();
     }
+
+    public function deleteParticipantsByProgramId($program_id)
+    {
+        $stmt = $this->con->prepare("DELETE FROM participant WHERE program_id = ?");
+        $stmt->bind_param("i", $program_id);
+        return $stmt->execute();
+    }
 }

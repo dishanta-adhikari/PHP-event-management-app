@@ -1,51 +1,94 @@
 <?php
-require_once('connection.php');
-session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    echo '<script>alert("You are logged Out ! Please log in Again");</script>';
-    echo '<script>window.location.href = "./index";</script>';
-    exit;
-}
+require_once __DIR__ . '/../_init.php';
 
+use App\Controllers\ProgramController;
+use App\Controllers\ParticipantController;
+use App\Controllers\UserController;
+
+$programController = new ProgramController($con);
+$participantController = new ParticipantController($con);
+$userController = new UserController($con);
+
+$user_id = $_SESSION['user_id'];
+
+// Handle deletion of a participant
 if (isset($_POST['delete_participant'])) {
     $participant_id = $_POST['participant_id'];
 
-    // Query to delete participant based on participant ID
-    $delete_query = "DELETE FROM participant WHERE participant_id = '$participant_id'";
-    $delete_result = mysqli_query($con, $delete_query);
+    // Validate that the participant belongs to the current user
+    $participants = $participantController->getAllParticipants();
+    $participantFound = false;
+    if ($participants) {
+        while ($row = $participants->fetch_assoc()) {
+            if ($row['participant_id'] == $participant_id && $row['user_id'] == $user_id) {
+                $participantFound = true;
+                break;
+            }
+        }
+    }
 
-    if ($delete_result) {
-        // Participant deleted successfully
+    if (!$participantFound) {
+        echo '<script>alert("Invalid participant or permission denied.");</script>';
+        echo '<script>window.location.href = "' . $appUrl . '/src/Views/club/participants/index";</script>';
+        exit;
+    }
+
+    if ($participantController->deleteParticipantById($participant_id)) {
         echo '<script>alert("Participant deleted successfully");</script>';
-        echo '<script>window.location.href = "./clubwiseprtcpnt";</script>';
+        echo '<script>window.location.href = "' . $appUrl . '/src/Views/club/participants/index";</script>';
+        exit;
     } else {
-        // Failed to delete participant
         echo '<script>alert("Failed to delete participant");</script>';
-        echo '<script>window.location.href = "./clubwiseprtcpnt";</script>';
     }
 }
 
-$club_partic = $_SESSION['user_id'];
-$query = "SELECT * FROM participant WHERE user_id='$club_partic'";
-$res = mysqli_query($con, $query);
+// Fetch all participants for this user
+$allParticipants = $participantController->getAllParticipants();
+$participants = [];
+if ($allParticipants) {
+    while ($row = $allParticipants->fetch_assoc()) {
+        if ($row['user_id'] == $user_id) {
+            $participants[] = $row;
+        }
+    }
+}
 
-$query1 = "SELECT * FROM program WHERE user_id='$club_partic'";
-$res1 = mysqli_query($con, $query1);
+// Get all programs for this user
+$programsResult = $programController->getProgramsByUserId($user_id);
+$programs = [];
+if ($programsResult) {
+    while ($row = $programsResult->fetch_assoc()) {
+        $programs[] = $row;
+    }
+}
 
+// For mapping program_id to program name
+$programNames = [];
+foreach ($programs as $program) {
+    $programNames[$program['program_id']] = $program['name'];
+}
 
+// For mapping user_id to user name (club name)
+$userName = '';
+$userData = $userController->getUserById($user_id);
+if ($userData && is_array($userData)) {
+    $userName = $userData['name'];
+}
 ?>
 
-
-<!-- html -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="./assets/images/cropped-GCU-Logo-circle.png">
-    <title>View Participants</title>
+    <link rel="icon" href="<?php echo $appUrl; ?>/public/assets/images/cropped-GCU-Logo-circle.png">
+    <title>All Participants</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
@@ -107,7 +150,6 @@ $res1 = mysqli_query($con, $query1);
             }
         }
     </style>
-
 </head>
 
 <body class="bg-dark">
@@ -121,21 +163,12 @@ $res1 = mysqli_query($con, $query1);
                                 aria-expanded="false">
                                 Programs
                             </button>
-
                             <ul class="dropdown-menu bg-dark">
-                                <?php while ($row1 = mysqli_fetch_assoc($res1)) { ?>
+                                <?php foreach ($programs as $row1) { ?>
                                     <li>
-                                        <form action="./clubdropdown" method="POST">
-                                            <input type="hidden" name="name" value="<?php echo $row1['name']; ?>">
-
-                                            <a href="./clubdropdown" style="color:white;" class="drop-link">
-                                                <button class="dropdown-item mb-2 text-center" type="submit"
-                                                    style="color:white;">
-                                                    <?php echo $row1['name'] . "<br>"; ?>
-                                                </button>
-                                            </a>
-
-                                        </form>
+                                        <a href="<?php echo $appUrl; ?>/src/Views/club/participants/filter?id=<?php echo urlencode($row1['program_id']); ?>" style="color:white;" class="dropdown-item mb-2 text-center drop-link">
+                                            <?php echo htmlspecialchars($row1['name']) . "<br>"; ?>
+                                        </a>
                                     </li>
                                 <?php } ?>
                             </ul>
@@ -147,7 +180,6 @@ $res1 = mysqli_query($con, $query1);
                         <div class="table-responsive">
                             <table class="table table-bordered text-center">
                                 <tr>
-                                    <td class="bg-dark text-white"> ID </td>
                                     <td class="bg-dark text-white"> Name </td>
                                     <td class="bg-dark text-white"> Email </td>
                                     <td class="bg-dark text-white"> Phone </td>
@@ -158,76 +190,32 @@ $res1 = mysqli_query($con, $query1);
                                     <td class="bg-dark text-white"> Club Name </td>
                                     <td class="bg-dark text-white"> Delete </td>
                                 </tr>
-                                <tr>
-
-                                    <?php
-                                    while ($row = mysqli_fetch_assoc($res)) {
-                                        ?>
+                                <?php foreach ($participants as $row): ?>
                                     <tr>
-                                        <td>
-                                            <?php echo $row['participant_id']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $row['name']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $row['email']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $row['phone']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $row['branch']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $row['sem']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $row['college']; ?>
-                                        </td>
+                                        <td><?php echo htmlspecialchars($row['name']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['email']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['phone']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['branch']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['sem']); ?></td>
+                                        <td><?php echo htmlspecialchars($row['college']); ?></td>
                                         <td>
                                             <?php
-                                            $user_id = $row['program_id']; // Assuming $row contains program_id
-                                            $query = "SELECT name FROM program WHERE program_id = '$user_id'";
-                                            $res2 = mysqli_query($con, $query);
-
-                                            if ($res2) {
-                                                $program = mysqli_fetch_assoc($res2);
-                                                echo $program['name']; // Display the retrieved program name
-                                            }
-
+                                            $pid = $row['program_id'];
+                                            echo isset($programNames[$pid]) ? htmlspecialchars($programNames[$pid]) : 'N/A';
                                             ?>
                                         </td>
+                                        <td><?php echo htmlspecialchars($userName); ?></td>
                                         <td>
-                                            <?php
-
-                                            $user_id = $row['user_id']; // Assuming $row contains user_id
-                                            $query = "SELECT name FROM user WHERE user_id = '$user_id'";
-                                            $res3 = mysqli_query($con, $query);
-
-                                            if ($res) {
-                                                $user = mysqli_fetch_assoc($res3);
-                                                echo $user['name']; // Display the retrieved name
-                                            }
-                                            ?>
-                                        </td>
-                                        <td>
-                                            <!-- Form to submit participant ID for deletion with confirmation -->
                                             <form action="" method="POST"
                                                 onsubmit="return confirm('Are you sure you want to delete this participant data?');">
                                                 <input type="hidden" name="participant_id"
-                                                    value="<?php echo $row['participant_id']; ?>">
+                                                    value="<?php echo htmlspecialchars($row['participant_id']); ?>">
                                                 <button type="submit" name="delete_participant"
                                                     class="btn btn-danger">Delete</button>
                                             </form>
                                         </td>
-
                                     </tr>
-                                    <?php
-                                    }
-                                    ?>
-
-                                </tr>
+                                <?php endforeach; ?>
                             </table>
                         </div>
                     </div>
@@ -242,11 +230,10 @@ $res1 = mysqli_query($con, $query1);
     <script>
         const closeModal = document.getElementById('closeModal');
         closeModal.addEventListener('click', () => {
-            window.location.href = './clubdash';
-
+            window.location.href = '<?php echo $appUrl; ?>/src/Views/club/dashboard';
         });
     </script>
-    <script src="./assets/JS/printpage.js"></script>
+    <script src="<?php echo $appUrl; ?>/public/assets/JS/printpage.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
