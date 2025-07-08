@@ -1,33 +1,33 @@
 # Event Management System
 
-A comprehensive event management platform built with PHP, MySQL, and Bootstrap. This system is designed for educational institutions to manage events, allowing students to browse and register for programs efficiently. It features user authentication, role-based dashboards, secure registration, and responsive UI.
+A robust event management platform developed using PHP, MySQL, and Bootstrap. Tailored for educational institutions, it streamlines event organization, enabling students to easily browse and register for programs. The system includes secure authentication, role-based dashboards, protected registration, and a responsive user interface.
 
 ---
 
 ## Features
 
 ### Core Functionality
-- User Authentication – Secure login system with session handling  
-- Role-Based Access – Admin, Club, and Student roles with separate dashboards  
-- Program Management – Admins & Clubs can create, update, and delete events  
-- Student Registration – Students can view and register for events  
-- Duplicate Registration Prevention – Avoid multiple entries for the same event  
+- User Authentication – Secure login system with session management  
+- Role-Based Access – Separate dashboards for Admin, Club, and Student roles  
+- Program Management – Admins and Clubs can create, update, and delete events  
+- Student Registration – Students can view and register for available events  
+- Duplicate Registration Prevention – Prevents multiple registrations for the same event  
 
 ### Technical Features
-- MVC Architecture – Clean code separation (Controllers, Views, Models)  
-- Database Security – Prepared statements to prevent SQL injection  
-- Responsive UI – Mobile-friendly interface with Bootstrap  
-- File Uploads – Poster/image support for events  
-- Session Management – Proper login sessions with access control  
+- MVC Architecture – Clean separation of Controllers, Views, and Models  
+- Database Security – Uses prepared statements to guard against SQL injection  
+- Responsive UI – Mobile-friendly design powered by Bootstrap  
+- File Uploads – Supports poster/image uploads for events  
+- Session Management – Ensures proper login sessions and access control  
 
 ---
 
 ## Prerequisites
 
 - XAMPP (Apache, MySQL, PHP)  
-- PHP 7.4 or higher  
-- MySQL 5.7 or higher  
-- Composer (for dependency management)  
+- PHP 7.4 or newer  
+- MySQL 5.7 or newer  
+- Composer (for managing dependencies)  
 
 ---
 
@@ -43,9 +43,9 @@ A comprehensive event management platform built with PHP, MySQL, and Bootstrap. 
    - Place the project folder inside the `htdocs` directory.
 
 3. Database Setup  
-   - Create a database in phpMyAdmin (e.g. `gcuems_db`)  
-   - Import the SQL file (if provided)  
-   - Update database credentials in the config file  
+   - Create a database in phpMyAdmin (e.g., `gcuems_db`)  
+   - Import the provided SQL file  
+   - Update database credentials in the configuration file  
 
 4. Environment Configuration  
    ```bash
@@ -66,7 +66,7 @@ A comprehensive event management platform built with PHP, MySQL, and Bootstrap. 
    ```
 
 6. Run the App  
-   Visit in your browser:  
+   Open in your browser:  
    ```
    http://localhost/PHP-event-management-app
    ```
@@ -77,14 +77,14 @@ A comprehensive event management platform built with PHP, MySQL, and Bootstrap. 
 
 ### Admin  
 - Manage all programs  
-- View participants  
+- View participant lists  
 - Manage user accounts  
 
 ### Club  
 - Create and manage club-specific events  
-- View participant list  
+- View participant lists  
 
-###  Student  
+### Student  
 - Browse all active events  
 - Register for programs  
 - View registration history  
@@ -94,18 +94,18 @@ A comprehensive event management platform built with PHP, MySQL, and Bootstrap. 
 ## Security Highlights
 
 - Prepared Statements to prevent SQL Injection  
-- File Validation for safe image uploads  
+- File Validation for secure image uploads  
 - Session-Based Authentication  
 - Input Validation (Client & Server-side)  
-- XSS Protection via output escaping  
+- XSS Protection through output escaping  
 
 ---
 
 ## License
 
-This project is open-source and free to use under the MIT License.
+This project is open-source and available under the MIT License.
 
 ---
 
 
-Made with ❤️ for better coordination.
+Made with ❤️ to enhance coordination.
